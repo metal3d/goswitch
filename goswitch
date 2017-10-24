@@ -1,0 +1,125 @@
+#!/bin/bash
+
+CMD=$(basename $0)
+_ROOT="$HOME/Projects"
+_GOROOTPATH=${_ROOT}/go/root
+_GOPATH=${_ROOT}/go/path
+
+setpath(){
+    VERSION=$1
+    GOROOT=${_GOROOTPATH}/go-${VERSION}
+    GOPATH=${_GOPATH}/go-${VERSION}
+
+    if [ ! -d $GOROOT ]; then
+        echo "Go $VERSION is not installed, would you like to install it right now ?"
+        echo -n "yes, y ? "
+        read -a RESP
+        RESP=$(echo "$RESP" | tr "[a-z]" "[A-Z]") 
+        echo "Answered: $RESP"
+        case $RESP in
+            YES|Y)
+                install_go $VERSION
+                ;;
+            *)
+                exit 1
+                ;;
+        esac
+    fi
+
+    echo "# you must call eval \$("$(basename $0)" use ${VERSION})"
+    [ -d ${GOROOT} ] && echo "export GOROOT=${GOROOT}; export PATH=\$GOROOT/bin:\$PATH"
+    [ -d ${GOPATH} ] && echo "export GOPATH=${GOPATH}; export PATH=\$GOPATH/bin:\$PATH"
+
+    if [ "$2" == "default" ]; then
+
+        START_COMMENT="- GOSWITCH - START - DO NOT REMOVE THAT COMMENT"
+        END_COMMENT="- GOSWITCH - END - DO NOT REMOVE THAT COMMENT"
+
+        # Remove old entry
+        SEDREM="sed -i '/${START_COMMENT}/,/${END_COMMENT}/d' ~/.profile"
+        eval $SEDREM
+
+        # add new entry
+        cat >> ~/.profile <<EOF
+# ${START_COMMENT}
+export GOPATH=${GOPATH}
+export GOROOT=${GOROOT}
+export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
+# ${END_COMMENT}
+EOF
+
+    echo -e "\E[036mOk, you can now open new shell and/or reload ~/.profile (source ~/.profile)" >&2
+    fi
+}
+
+install_go(){
+    echo "install go $1"
+    VERSION=$1
+    u="https://storage.googleapis.com/golang/go${VERSION}.linux-amd64.tar.gz"
+    echo "Downloading $u"
+    GOROOT=${_GOROOTPATH}/go-${VERSION}
+    [ -d ${GOROOT} ] && echo -e "\E[32m$GOROOT already exists, if you want to reinstall, please remove that directory first\E[0m" && exit 1
+
+    pushd /tmp 2>&1 >/dev/null
+        curl --fail -L -# "$u" -o go-${VERSION}.tgz
+        RES=$?
+        if [ $RES != "0" ]; then
+            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${CMD} available\" to check version\E[0m\n"
+            exit 1
+        fi
+
+        tar xf go-${VERSION}.tgz
+        rm -rf go-${VERSION}.tgz
+
+        mkdir -p $_GOROOTPATH
+        mv go ${_GOROOTPATH}/go-${VERSION}
+    popd 2>&1 >/dev/null
+
+    # create GOPATH
+    GOPATH=${_GOPATH}/go-${VERSION}
+    mkdir -p $GOPATH/bin
+    mkdir -p $GOPATH/pkg
+    mkdir -p $GOPATH/src
+}
+
+
+list_go(){
+    ls -1 $_GOROOTPATH 
+}
+
+remote_list(){
+    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -u
+}
+
+printHelp(){
+    echo "${CMD} command <version>"
+    echo "Commands:"
+    echo "   list:                  list installed version"
+    echo "   available:             list installable go version from golang.org"
+    echo "   install <version>:     install go-<version> (version should be x.y.z, eg. ${CMD} install 1.9.1)"
+    echo "   use <version>:         to be call with \"eval \$(${CMD} use <version>)\" to set env vars on current shell"
+    echo "   use <version> default: set ~/.profile to use that version in next login"
+
+}
+
+case $1 in
+    install)
+        install_go $2
+        ;;
+    use)
+        setpath $2 $3
+        ;;
+    list)
+        list_go
+        ;;
+    available)
+        remote_list
+        ;;
+    -h|--help)
+        printHelp
+        ;;
+    *)
+        printHelp
+        exit 1
+        ;;
+esac
