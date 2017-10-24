@@ -4,9 +4,21 @@ Install and switch version from official golang.org website.
 
 Go Switch help you to setup a Go version and environment variables.
 
+Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script :)
+
+My script is just a bit less heavy, simple and has not a lot of options. GVM is a great project that you should use if goswitch doesn't answer to your needs.
+
 ## Installation
 
+```
+# If ~/.local/bin is in your PATH
+curl https://raw.githubusercontent.com/metal3d/goswitch/devel/goswitch -o ~/.local/bin
+chmod +x ~/.local/bin/goswitch
 
+# OR
+sudo curl https://raw.githubusercontent.com/metal3d/goswitch/devel/goswitch -O /usr/local/bin/goswitch
+sudo chmod +x ~/.local/bin/goswitch
+```
 
 
 ## Usage
