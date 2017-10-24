@@ -88,7 +88,7 @@ list_go(){
 }
 
 remote_list(){
-    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -u
+    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -ru
 }
 
 printHelp(){
