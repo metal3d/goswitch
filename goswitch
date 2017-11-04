@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CMD=$(basename $0)
-_ROOT="$HOME/.go/"
-_GOROOTPATH=${_ROOT}/go/root
-_GOPATH=${_ROOT}/go/path
+_ROOT="$HOME/.go"
+_GOROOTPATH=${_ROOT}/root
+_GOPATH=${_ROOT}/path
 
 setpath(){
     VERSION=$1
