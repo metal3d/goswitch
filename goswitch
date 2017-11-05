@@ -17,14 +17,14 @@
 # whether in an action of contract, tort or otherwise, arising from, out of or in connection with the
 # software or the use or other dealings in the Software.
 
-CMD=$(basename $0)
+_CMD=$(basename $0)
 _ROOT="$HOME/.go"
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
 
 
 # taken from https://github.com/fatih/vim-go
-RECO=(
+_RECOMMENDED=(
 "asmfmt:         go get -u github.com/klauspost/asmfmt/cmd/asmfmt"
 "errcheck:       go get -u github.com/kisielk/errcheck"
 "fillstruct:     go get -u github.com/davidrjenni/reftools/cmd/fillstruct"
@@ -104,7 +104,7 @@ install_go(){
         curl --fail -L -# "$u" -o go-${VERSION}.tgz
         RES=$?
         if [ $RES != "0" ]; then
-            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${CMD} available\" to check version\E[0m\n"
+            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${_CMD} available\" to check version\E[0m\n"
             exit 1
         fi
 
@@ -134,21 +134,21 @@ remote_list(){
 }
 
 printHelp(){
-    echo "${CMD} command <version>"
+    echo "${_CMD} command <version>"
     echo "Commands:"
     echo "   list:                           list installed version from $_ROOT directory"
     echo "   available:                      list installable go version from golang.org"
     echo "   install <version>:              install go-<version> (version should be x.y.z,"
-    echo "                                   eg. ${CMD} install 1.9.1)"
-    echo "   use <version>:                  to be call with \"eval \$(${CMD} use <version>)\""
+    echo "                                   eg. ${_CMD} install 1.9.1)"
+    echo "   use <version>:                  to be call with \"eval \$(${_CMD} use <version>)\""
     echo "                                   to set env vars on current shell"
     echo "   use <version> default:          set ~/.profile to use that version in next login session"
     echo "                                   or if you "source" ~/.profile script"
     echo "   local-project [dir]:            use [dir] or current directory if [dir] is not"
     echo "                                   provided to create a local projecct. That creates"
     echo "                                   a bin/activate and bin/deactivate to use with 'source' command"
-    echo "                                   eg. ${CMD} local-project /tmp/myproject"
-    echo "   bash-completion:                set bash completion, please do 'source <(${CMD} bash-completion)'"
+    echo "                                   eg. ${_CMD} local-project /tmp/myproject"
+    echo "   bash-completion:                set bash completion, please do 'source <(${_CMD} bash-completion)'"
     echo "                                   You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc"
     echo "   install-recommended <name|all>: install recommended tool \"name\" to work with Go,"
     echo "                                   giving \"all\" will install the entire recommended list,"
@@ -186,8 +186,8 @@ EOF
 
 completion() {
     cat << EOF
-# bash completion for ${CMD}                                   -*- shell-script -*-
-__start_${CMD}()
+# bash completion for ${_CMD}                                   -*- shell-script -*-
+__start_${_CMD}()
 {
     local cur prev opts
     COMPREPLY=()
@@ -201,28 +201,28 @@ __start_${CMD}()
             return 0
             ;;
         install-recommended)
-            opts=\$(${CMD} list-recommended)" all"
+            opts=\$(${_CMD} list-recommended)" all"
             ;;
         install)
-            opts=\$(${CMD} available)
+            opts=\$(${_CMD} available)
             ;;
         use)
-            opts=\$(${CMD} list)
+            opts=\$(${_CMD} list)
             ;;
     esac
 
     COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
     return 0
 }
-complete -o default -F __start_${CMD} ${CMD}
+complete -o default -F __start_${_CMD} ${_CMD}
 EOF
 
 }
 
 list_recommended(){
-    COUNT=${#RECO[@]}
+    COUNT=${#_RECOMMENDED[@]}
     for ((i=0; i<$COUNT; i++)); do
-        line=${RECO[i]}
+        line=${_RECOMMENDED[i]}
         echo $line | cut -f1 -d":"
     done
 }
@@ -231,16 +231,16 @@ install_recommended(){
     toinstall=$1
     
     if [ -z "$toinstall" ]; then
-        echo -n "You need to give a recommended package name, (see ${CMD} list-recommended)"
+        echo -n "You need to give a recommended package name, (see ${_CMD} list-recommended)"
         echo -n " or \"all\" to install everything"
         echo
         exit 1
     fi
 
-    COUNT=${#RECO[@]}
+    COUNT=${#_RECOMMENDED[@]}
     OK="false"
     for ((i=0; i<$COUNT; i++)); do
-        line=${RECO[i]}
+        line=${_RECOMMENDED[i]}
         what=$(echo $line | cut -f1 -d":")
         if [ $toinstall == "all" ] || [ $toinstall == $what ]; then
             goget=$(echo $line | cut -f2 -d":")
@@ -251,7 +251,7 @@ install_recommended(){
     done
 
     if [ $OK != "true" ]; then
-        echo -n "$toinstall package not found in recommended list, see \"${CMD} list-recommended\""
+        echo -n "$toinstall package not found in recommended list, see \"${_CMD} list-recommended\""
         echo -n " to check if you didn't make a mistake"
         echo 
         exit 1
