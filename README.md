@@ -26,20 +26,24 @@ sudo chmod +x ~/.local/bin/goswitch
 ```
 goswitch command <version>
 Commands:
-   list:                  list installed version from /home/pafer/.go directory
-   available:             list installable go version from golang.org
-   install <version>:     install go-<version> (version should be x.y.z,
-                          eg. goswitch install 1.9.1)
-   use <version>:         to be call with "eval $(goswitch use <version>)"
-                          to set env vars on current shell
-   use <version> default: set ~/.profile to use that version in next login session
-                          or if you source ~/.profile script
-   local-project [dir]:   use [dir] or current directory if [dir] is not
-                          provided to create a local projecct. That creates
-                          a bin/activate and bin/deactivate to use with 'source' command
-                          eg. goswitch local-project /tmp/myproject
-   bash-completion:       Set bash completion, please do 'source <(goswitch bash-completion)'
-                          You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc
+   list:                           list installed version from /home/pafer/.go directory
+   available:                      list installable go version from golang.org
+   install <version>:              install go-<version> (version should be x.y.z,
+                                   eg. goswitch install 1.9.1)
+   use <version>:                  to be call with "eval $(goswitch use <version>)"
+                                   to set env vars on current shell
+   use <version> default:          set ~/.profile to use that version in next login session
+                                   or if you source ~/.profile script
+   local-project [dir]:            use [dir] or current directory if [dir] is not
+                                   provided to create a local projecct. That creates
+                                   a bin/activate and bin/deactivate to use with 'source' command
+                                   eg. goswitch local-project /tmp/myproject
+   bash-completion:                set bash completion, please do 'source <(goswitch bash-completion)'
+                                   You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc
+   install-recommended <name|all>: install recommended tool "name" to work with Go,
+                                   giving "all" will install the entire recommended list,
+                                   see "list-recommended" command
+   list-recommended:               list recommended gopackage to install
 ```
 
 
@@ -96,6 +100,24 @@ source ~/Projects/myproject/bin/deactivate
 The last GOPATH and PATH are now set up to the default.
 
 **NOTE**: If the path is not provided, so goswitch will create directories and scripts in the current directory.
+
+## Recommended packages
+
+Using vim-go, I was very glade to have a "GoInstallBinaries" command inside Vim to install recommended packages to work.
+
+I also needed [Glide](https://github.com/Masterminds/glide) to manage vendors packages, and [Delve](https://github.com/derekparker/delve) debugger. As I was always searching in Github where are that packages, I added that packages in my list. So you can install my recommended package via goswitch command:
+
+```bash
+# install all recommended packages
+goswitch install-recommended all
+
+# install one package, for example "glide"
+goswitch install-recommended glide
+```
+
+TODO: currently, I cannot ask installation of several packages at once, excepting using "all" keyword
+
+NOTE: completion is working for package names.
 
 ## Completion
 
