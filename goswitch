@@ -1,9 +1,49 @@
 #!/bin/bash
 
-CMD=$(basename $0)
+# Copyright © Patrice FERLET <metal3d@gmail.com>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+# and associated documentation files (the “Software”), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies or substantial
+# portions of the Software.
+# 
+# The Software is provided “as is”, without warranty of any kind, express or implied, including but
+# not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
+# In no event shall the authors or copyright holders be liable for any claim, damages or other liability, 
+# whether in an action of contract, tort or otherwise, arising from, out of or in connection with the
+# software or the use or other dealings in the Software.
+
+_CMD=$(basename $0)
 _ROOT="$HOME/.go"
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
+
+
+# taken from https://github.com/fatih/vim-go
+_RECOMMENDED=(
+"asmfmt:         go get -u github.com/klauspost/asmfmt/cmd/asmfmt"
+"errcheck:       go get -u github.com/kisielk/errcheck"
+"fillstruct:     go get -u github.com/davidrjenni/reftools/cmd/fillstruct"
+"gocode:         go get -u -ldflags -H=windowsgui github.com/nsf/gocode"
+"godef:          go get -u github.com/rogpeppe/godef"
+"gogetdoc:       go get -u github.com/zmb3/gogetdoc"
+"goimports:      go get -u golang.org/x/tools/cmd/goimports"
+"golint:         go get -u github.com/golang/lint/golint"
+"gometalinter:   go get -u github.com/alecthomas/gometalinter"
+"gomodifytags:   go get -u github.com/fatih/gomodifytags"
+"gorename:       go get -u golang.org/x/tools/cmd/gorename"
+"gotags:         go get -u github.com/jstemmer/gotags"
+"guru:           go get -u golang.org/x/tools/cmd/guru"
+"impl:           go get -u github.com/josharian/impl"
+"keyify:         go get -u github.com/dominikh/go-tools/cmd/keyify"
+"motion:         go get -u github.com/fatih/motion"
+"delve:          go get -u github.com/derekparker/delve/cmd/dlv"
+"glide:          go get -u github.com/Masterminds/glide"
+)
 
 setpath(){
     VERSION=$1
@@ -64,7 +104,7 @@ install_go(){
         curl --fail -L -# "$u" -o go-${VERSION}.tgz
         RES=$?
         if [ $RES != "0" ]; then
-            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${CMD} available\" to check version\E[0m\n"
+            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${_CMD} available\" to check version\E[0m\n"
             exit 1
         fi
 
@@ -94,22 +134,26 @@ remote_list(){
 }
 
 printHelp(){
-    echo "${CMD} command <version>"
+    echo "${_CMD} command <version>"
     echo "Commands:"
-    echo "   list:                  list installed version from $_ROOT directory"
-    echo "   available:             list installable go version from golang.org"
-    echo "   install <version>:     install go-<version> (version should be x.y.z,"
-    echo "                          eg. ${CMD} install 1.9.1)"
-    echo "   use <version>:         to be call with \"eval \$(${CMD} use <version>)\""
-    echo "                          to set env vars on current shell"
-    echo "   use <version> default: set ~/.profile to use that version in next login session"
-    echo "                          or if you "source" ~/.profile script"
-    echo "   local-project [dir]:   use [dir] or current directory if [dir] is not"
-    echo "                          provided to create a local projecct. That creates"
-    echo "                          a bin/activate and bin/deactivate to use with 'source' command"
-    echo "                          eg. ${CMD} local-project /tmp/myproject"
-    echo "   bash-completion:       Set bash completion, please do 'source <(${CMD} bash-completion)'"
-    echo "                          You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc"
+    echo "   list:                           list installed version from $_ROOT directory"
+    echo "   available:                      list installable go version from golang.org"
+    echo "   install <version>:              install go-<version> (version should be x.y.z,"
+    echo "                                   eg. ${_CMD} install 1.9.1)"
+    echo "   use <version>:                  to be call with \"eval \$(${_CMD} use <version>)\""
+    echo "                                   to set env vars on current shell"
+    echo "   use <version> default:          set ~/.profile to use that version in next login session"
+    echo "                                   or if you "source" ~/.profile script"
+    echo "   local-project [dir]:            use [dir] or current directory if [dir] is not"
+    echo "                                   provided to create a local projecct. That creates"
+    echo "                                   a bin/activate and bin/deactivate to use with 'source' command"
+    echo "                                   eg. ${_CMD} local-project /tmp/myproject"
+    echo "   bash-completion:                set bash completion, please do 'source <(${_CMD} bash-completion)'"
+    echo "                                   You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc"
+    echo "   install-recommended <name|all>: install recommended tool \"name\" to work with Go,"
+    echo "                                   giving \"all\" will install the entire recommended list,"
+    echo "                                   see \"list-recommended\" command"
+    echo "   list-recommended:               list recommended gopackage to install"
 }
 
 
@@ -142,58 +186,114 @@ EOF
 
 completion() {
     cat << EOF
-# bash completion for ${CMD}                                   -*- shell-script -*-
-__start_${CMD}()
+# bash completion for ${_CMD}                                   -*- shell-script -*-
+__start_${_CMD}()
 {
     local cur prev opts
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    opts="install use list available local-project --help -h bash-completion"
-
+    opts="install use list available local-project --help -h bash-completion install-recommended list-recommended"
 
     case \${prev} in 
         local-project)
             COMPREPLY=( \$(compgen -f \${cur}) )
             return 0
             ;;
+        install-recommended)
+            opts=\$(${_CMD} list-recommended)" all"
+            ;;
         install)
-            opts=\$(${CMD} available)
+            opts=\$(${_CMD} available)
             ;;
         use)
-            opts=\$(${CMD} list)
+            opts=\$(${_CMD} list)
             ;;
     esac
 
     COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
     return 0
 }
-complete -o default -F __start_${CMD} ${CMD}
+complete -o default -F __start_${_CMD} ${_CMD}
 EOF
 
 }
+
+list_recommended(){
+    COUNT=${#_RECOMMENDED[@]}
+    for ((i=0; i<$COUNT; i++)); do
+        line=${_RECOMMENDED[i]}
+        echo $line | cut -f1 -d":"
+    done
+}
+
+install_recommended(){
+    toinstall=$1
+    
+    if [ -z "$toinstall" ]; then
+        echo -n "You need to give a recommended package name, (see ${_CMD} list-recommended)"
+        echo -n " or \"all\" to install everything"
+        echo
+        exit 1
+    fi
+
+    COUNT=${#_RECOMMENDED[@]}
+    OK="false"
+    for ((i=0; i<$COUNT; i++)); do
+        line=${_RECOMMENDED[i]}
+        what=$(echo $line | cut -f1 -d":")
+        if [ $toinstall == "all" ] || [ $toinstall == $what ]; then
+            goget=$(echo $line | cut -f2 -d":")
+            echo "Installing $what"
+            echo $goget
+            OK="true"
+        fi
+    done
+
+    if [ $OK != "true" ]; then
+        echo -n "$toinstall package not found in recommended list, see \"${_CMD} list-recommended\""
+        echo -n " to check if you didn't make a mistake"
+        echo 
+        exit 1
+    fi
+}
+
 
 case $1 in
     bash-completion)
         completion
         ;;
+    
     install)
         install_go $2
         ;;
+    
     use)
         setpath $2 $3
         ;;
+    
     list)
         list_go
         ;;
+    
     available)
         remote_list
         ;;
+    
     -h|--help)
         printHelp
         ;;
+    
     local-project)
         local_project $2
+        ;;
+
+    list-recommended)
+        list_recommended
+        ;;
+
+    install-recommended)
+        install_recommended $2
         ;;
     *)
         printHelp
