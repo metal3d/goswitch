@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CMD=$(basename $0)
-_ROOT="$HOME/.go/"
-_GOROOTPATH=${_ROOT}/go/root
-_GOPATH=${_ROOT}/go/path
+_ROOT="$HOME/.go"
+_GOROOTPATH=${_ROOT}/root
+_GOPATH=${_ROOT}/path
 
 setpath(){
     VERSION=$1
@@ -84,25 +84,99 @@ install_go(){
 
 
 list_go(){
-    ls -1 $_GOROOTPATH 
+    for v in $(ls -1 $_GOROOTPATH); do
+        echo $v | sed 's/^go-//'
+    done
 }
 
 remote_list(){
-    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -u
+    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -ru
 }
 
 printHelp(){
     echo "${CMD} command <version>"
     echo "Commands:"
-    echo "   list:                  list installed version"
+    echo "   list:                  list installed version from $_ROOT directory"
     echo "   available:             list installable go version from golang.org"
-    echo "   install <version>:     install go-<version> (version should be x.y.z, eg. ${CMD} install 1.9.1)"
-    echo "   use <version>:         to be call with \"eval \$(${CMD} use <version>)\" to set env vars on current shell"
-    echo "   use <version> default: set ~/.profile to use that version in next login"
+    echo "   install <version>:     install go-<version> (version should be x.y.z,"
+    echo "                          eg. ${CMD} install 1.9.1)"
+    echo "   use <version>:         to be call with \"eval \$(${CMD} use <version>)\""
+    echo "                          to set env vars on current shell"
+    echo "   use <version> default: set ~/.profile to use that version in next login session"
+    echo "                          or if you "source" ~/.profile script"
+    echo "   local-project [dir]:   use [dir] or current directory if [dir] is not"
+    echo "                          provided to create a local projecct. That creates"
+    echo "                          a bin/activate and bin/deactivate to use with 'source' command"
+    echo "                          eg. ${CMD} local-project /tmp/myproject"
+    echo "   bash-completion:       Set bash completion, please do 'source <(${CMD} bash-completion)'"
+    echo "                          You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc"
+}
+
+
+local_project() {
+    [[ -z "$1" ]] && folder="." || folder=$1
+    folder=$(realpath $folder)
+    mkdir -p ${folder}/{src,bin,pkg}
+    cat > ${folder}/bin/activate << EOF
+export GOPATH=${folder}:\$GOPATH
+export PATH=${folder}/bin:\$PATH
+echo "Now in a local project for Go
+echo "go get command will install in ${folder}/bin and ${folder}/src
+#exec $SHELL
+EOF
+
+    cat > ${folder}/bin/deactivate << EOF
+export GOPATH=$GOPATH
+export GOROOT=$GOROOT
+export PATH=$PATH
+#exec $SHELL
+EOF
+
+    echo "You can now use:" 
+    echo "source ${folder}/bin/activate"
+    echo "to activate environemnet"
+    echo 
+    echo "You can deactivate environment using"
+    echo "source ${folder}/deactivate"
+}
+
+completion() {
+    cat << EOF
+# bash completion for ${CMD}                                   -*- shell-script -*-
+__start_${CMD}()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="\${COMP_WORDS[COMP_CWORD]}"
+    prev="\${COMP_WORDS[COMP_CWORD-1]}"
+    opts="install use list available local-project --help -h bash-completion"
+
+
+    case \${prev} in 
+        local-project)
+            COMPREPLY=( \$(compgen -f \${cur}) )
+            return 0
+            ;;
+        install)
+            opts=\$(${CMD} available)
+            ;;
+        use)
+            opts=\$(${CMD} list)
+            ;;
+    esac
+
+    COMPREPLY=( \$(compgen -W "\${opts}" -- \${cur}) )
+    return 0
+}
+complete -o default -F __start_${CMD} ${CMD}
+EOF
 
 }
 
 case $1 in
+    bash-completion)
+        completion
+        ;;
     install)
         install_go $2
         ;;
@@ -117,6 +191,9 @@ case $1 in
         ;;
     -h|--help)
         printHelp
+        ;;
+    local-project)
+        local_project $2
         ;;
     *)
         printHelp
