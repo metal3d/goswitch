@@ -4,6 +4,8 @@ Install and switch version from official golang.org website.
 
 Go Switch help you to setup a Go version and environment variables. It can also create a local environment that is similar to python virtualenv.
 
+Goswitch can install recommended packages (see `list-recommended` and `install-recommended` options).
+
 Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script :)
 
 My script is just a bit less heavy, simple and has not a lot of options. GVM is a great project that you should use if goswitch doesn't answer to your needs.
