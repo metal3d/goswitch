@@ -246,6 +246,7 @@ install_recommended(){
             goget=$(echo $line | cut -f2 -d":")
             echo "Installing $what"
             echo $goget
+            $goget
             OK="true"
         fi
     done
