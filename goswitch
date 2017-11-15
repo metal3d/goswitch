@@ -21,6 +21,7 @@ _CMD=$(basename $0)
 _ROOT="$HOME/.go"
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
+_VERSION=0.0.9
 
 
 # taken from https://github.com/fatih/vim-go
