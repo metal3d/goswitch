@@ -13,13 +13,13 @@ My script is just a bit less heavy, simple and has not a lot of options. GVM is 
 ## Installation
 
 ```
-# If ~/.local/bin is in your PATH
+# If ~/.local/bin is in your PATH (recommanded)
 curl https://raw.githubusercontent.com/metal3d/goswitch/master/goswitch -o ~/.local/bin/goswitch
 chmod +x ~/.local/bin/goswitch
 
 # OR
 sudo curl https://raw.githubusercontent.com/metal3d/goswitch/master/goswitch -O /usr/local/bin/goswitch
-sudo chmod +x ~/.local/bin/goswitch
+sudo chmod +x /usr/local/bin/goswitch
 ```
 
 
