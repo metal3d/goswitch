@@ -22,6 +22,7 @@ _ROOT="$HOME/.go"
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
 _VERSION=0.0.9
+_CONF=$HOME/.config/goswitch
 
 
 # taken from https://github.com/fatih/vim-go
@@ -52,6 +53,8 @@ version(){
 }
 
 checkupdate(){
+    make_config
+    date +"%s" > $_CONF/lastchecked
     TMP=$(mktemp)
     curl -sSL https://api.github.com/repos/metal3d/goswitch/releases/latest > $TMP
     latest=$(awk '/"tag_name"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
@@ -60,18 +63,25 @@ checkupdate(){
     checked=$(printf "$_VERSION\n$latest" | sort -ruV | head -n1)
 
     if [ $checked == $_VERSION ]; then
+        if [ "$1" != "check" ] ; then
+            echo -ne "\033[32m"
             echo "You're using the latest version $_VERSION"
-            return 0
-    fi
-    if [ $checked != $_VERSION ]; then
-        if [ "$1" == "warn" ]; then
-            echo "A new version, $latest, can be installed. Please try to update $_CMD by using $_CMD update"
-        elif [ "$1" == "update" ]; then
-            where=$(which $_CMD)
-            echo "Installing new version $latest"
-            url=$(awk '/"tarball_url"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
-            update "$url" "$where"
+            echo -ne "\033[0m"
         fi
+    else
+        case $1 in
+            "warn"|"check")
+                echo -ne "\033[33m"
+                echo "A new version, $latest, can be installed. Please try to update $_CMD by using: $_CMD update"
+                echo -ne "\033[0m"
+                ;;
+            "update")
+                where=$(which $_CMD)
+                echo "Installing new version $latest"
+                url=$(awk '/"tarball_url"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
+                update "$url" "$where"
+                ;;
+        esac
     fi
     rm -rf $TMP
 }
@@ -89,6 +99,22 @@ update() {
     rm -rf $F
 }
 
+
+auto_check(){
+    make_config
+    [ ! -f $_CONF/lastchecked ] && date +"%s" > $_CONF/lastchecked
+    lastchecked=$(cat $_CONF/lastchecked)
+    current=$(date +"%s")
+    spent=$((current-lastchecked))
+    if [ $spent -gt 86400 ]; then
+        checkupdate "check"
+    fi
+}
+
+
+make_config(){
+    [ ! -d $_CONF ] && mkdir -p $_CONF
+}
 
 setpath(){
     VERSION=$1
@@ -208,7 +234,7 @@ printHelp(){
     echo
     echo "   list-recommended:               list recommended gopackage to install"
     echo
-    echo "   check-update:                   check latest version of $_CMD"
+    echo "   check-update:                   check latest version of $_CMD, doesn't install"
     echo
     echo "   update:                         update $_CMD to the latest version"
     echo
@@ -321,44 +347,56 @@ install_recommended(){
 }
 
 
+# make a check of version only for other commands than
+# completion and update/check-update commands, to not 
+# make noises when opening shell.
 case $1 in
     bash-completion)
         completion
         ;;
     
     install)
+        auto_check
         install_go $2
         ;;
     
     use)
+        auto_check
         setpath $2 $3
         ;;
     
     list)
+        auto_check
         list_go
         ;;
     
     available)
+        auto_check
         remote_list
         ;;
     
     -h|--help|help)
+        auto_check
         printHelp
         ;;
 
     -v|--version|version)
+        auto_check
         version
         ;;
 
     local-project)
+        auto_check
         local_project $2
         ;;
 
     list-recommended)
+        auto_check
         list_recommended
         ;;
 
     install-recommended)
+        auto_check
         install_recommended $2
         ;;
 
@@ -371,6 +409,7 @@ case $1 in
         ;;
 
     *)
+        auto_check
         printHelp
         exit 1
         ;;
