@@ -46,6 +46,50 @@ _RECOMMENDED=(
 "glide:          go get -u github.com/Masterminds/glide"
 )
 
+
+version(){
+    echo "$_VERSION"
+}
+
+checkupdate(){
+    TMP=$(mktemp)
+    curl -sSL https://api.github.com/repos/metal3d/goswitch/releases/latest > $TMP
+    latest=$(awk '/"tag_name"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
+    latest=$(echo "$latest" | sed 's/^v//')
+
+    checked=$(printf "$_VERSION\n$latest" | sort -ruV | head -n1)
+
+    if [ $checked == $_VERSION ]; then
+            echo "You're using the latest version $_VERSION"
+            return 0
+    fi
+    if [ $checked != $_VERSION ]; then
+        if [ "$1" == "warn" ]; then
+            echo "A new version, $latest, can be installed. Please try to update $_CMD by using $_CMD update"
+        elif [ "$1" == "update" ]; then
+            where=$(which $_CMD)
+            echo "Installing new version $latest"
+            url=$(awk '/"tarball_url"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
+            update "$url" "$where"
+        fi
+    fi
+    rm -rf $TMP
+}
+
+update() {
+    url=$1
+    where=$2
+
+    F=$(mktemp -d)
+    pushd $F 2>&1 > /dev/null
+        curl -sSL "$url" | tar -xzf - --strip=1 */goswitch
+        mv goswitch $where
+        chmod +x $where
+    popd 2>&1 > /dev/null
+    rm -rf $F
+}
+
+
 setpath(){
     VERSION=$1
     GOROOT=${_GOROOTPATH}/go-${VERSION}
@@ -138,23 +182,39 @@ printHelp(){
     echo "${_CMD} command <version>"
     echo "Commands:"
     echo "   list:                           list installed version from $_ROOT directory"
+    echo
     echo "   available:                      list installable go version from golang.org"
+    echo
     echo "   install <version>:              install go-<version> (version should be x.y.z,"
     echo "                                   eg. ${_CMD} install 1.9.1)"
+    echo
     echo "   use <version>:                  to be call with \"eval \$(${_CMD} use <version>)\""
     echo "                                   to set env vars on current shell"
+    echo
     echo "   use <version> default:          set ~/.profile to use that version in next login session"
     echo "                                   or if you "source" ~/.profile script"
+    echo
     echo "   local-project [dir]:            use [dir] or current directory if [dir] is not"
     echo "                                   provided to create a local projecct. That creates"
     echo "                                   a bin/activate and bin/deactivate to use with 'source' command"
     echo "                                   eg. ${_CMD} local-project /tmp/myproject"
+    echo
     echo "   bash-completion:                set bash completion, please do 'source <(${_CMD} bash-completion)'"
-    echo "                                   You may add this line in you ~/.profile, ~/.bash_profile or ~/.bashrc"
+    echo "                                   You may add this line in you ~/.bashrc"
+    echo
     echo "   install-recommended <name|all>: install recommended tool \"name\" to work with Go,"
     echo "                                   giving \"all\" will install the entire recommended list,"
     echo "                                   see \"list-recommended\" command"
+    echo
     echo "   list-recommended:               list recommended gopackage to install"
+    echo
+    echo "   check-update:                   check latest version of $_CMD"
+    echo
+    echo "   update:                         update $_CMD to the latest version"
+    echo
+    echo "   -h|--help:                      print this help"
+    echo
+    echo "   -v|--version|-version:          print version ($_VERSION)"
 }
 
 
@@ -194,7 +254,7 @@ __start_${_CMD}()
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    opts="install use list available local-project --help -h bash-completion install-recommended list-recommended"
+    opts="install use list available local-project --help -h help bash-completion install-recommended list-recommended -v --version version check-update update"
 
     case \${prev} in 
         local-project)
@@ -282,10 +342,14 @@ case $1 in
         remote_list
         ;;
     
-    -h|--help)
+    -h|--help|help)
         printHelp
         ;;
-    
+
+    -v|--version|version)
+        version
+        ;;
+
     local-project)
         local_project $2
         ;;
@@ -297,6 +361,15 @@ case $1 in
     install-recommended)
         install_recommended $2
         ;;
+
+    check-update)
+        checkupdate "warn"
+        ;;
+
+    update)
+        checkupdate "update"
+        ;;
+
     *)
         printHelp
         exit 1
