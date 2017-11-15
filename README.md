@@ -131,5 +131,5 @@ source <(goswitch bash-completion)
 
 Then, type "goswitch" and hit `TAB` key on keyboard, completion can also propose installed versions for "use" command, or available versions for "install" command.
 
-If that works for you, add the source command into you `~/.bash_profile` file to have it for next shell session.
+If that works for you, add the source command into you `~/.bashrc` file to have it for next shell session.
 
