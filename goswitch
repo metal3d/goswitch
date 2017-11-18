@@ -166,7 +166,15 @@ EOF
 install_go(){
     echo "install go $1"
     VERSION=$1
-    u="https://storage.googleapis.com/golang/go${VERSION}.linux-amd64.tar.gz"
+    ARCH=$(uname -p | tr "[A-Z]" "[a-z]")
+    case $ARCH in
+        x86_64)
+            ARCH="amd64"
+    esac
+    SYS=$(uname -s | tr "[A-Z]" "[a-z]")
+
+    u="https://storage.googleapis.com/golang/go${VERSION}.${SYS}-${ARCH}.tar.gz"
+
     echo "Downloading $u"
     GOROOT=${_GOROOTPATH}/go-${VERSION}
     [ -d ${GOROOT} ] && echo -e "\E[32m$GOROOT already exists, if you want to reinstall, please remove that directory first\E[0m" && exit 1
@@ -175,7 +183,7 @@ install_go(){
         curl --fail -L -# "$u" -o go-${VERSION}.tgz
         RES=$?
         if [ $RES != "0" ]; then
-            echo -ne "\n\n\E[31mGo version \"$VERSION\" not found, use \"${_CMD} available\" to check version\E[0m\n"
+            echo -ne "\n\n\E[31mGo version \"$VERSION\" for ${SYS} ${ARCH} not found, use \"${_CMD} available\" to check version\E[0m\n"
             exit 1
         fi
 
@@ -222,7 +230,7 @@ printHelp(){
     echo
     echo "   local-project [dir]:            use [dir] or current directory if [dir] is not"
     echo "                                   provided to create a local projecct. That creates"
-    echo "                                   a bin/activate and bin/deactivate to use with 'source' command"
+    echo "                                   a bin/activate to use with 'source' command"
     echo "                                   eg. ${_CMD} local-project /tmp/myproject"
     echo
     echo "   bash-completion:                set bash completion, please do 'source <(${_CMD} bash-completion)'"
@@ -315,8 +323,8 @@ EOF
     echo "source ${folder}/bin/activate"
     echo "to activate environemnet"
     echo 
-    echo "You can deactivate environment using"
-    echo "source ${folder}/deactivate"
+    echo "You can deactivate environment using:"
+    echo "deactivate"
 }
 
 completion() {
