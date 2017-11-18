@@ -14,11 +14,17 @@ My script is just a bit less heavy, simple and has not a lot of options. GVM is 
 
 ```
 # If ~/.local/bin is in your PATH (recommanded)
-curl https://raw.githubusercontent.com/metal3d/goswitch/master/goswitch -o ~/.local/bin/goswitch
+curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/latest | \
+    grep tarball | cut -d '"' -f 4) | \
+    tar -zxf - --strip-components=1 -C ~/.local/bin */goswitch
+
 chmod +x ~/.local/bin/goswitch
 
 # OR
-sudo curl https://raw.githubusercontent.com/metal3d/goswitch/master/goswitch -O /usr/local/bin/goswitch
+sudo curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/latest | \
+    grep tarball | cut -d '"' -f 4) | \
+    tar -zxf - --strip-components=1 -C ~/usr/local/bin */goswitch
+
 sudo chmod +x /usr/local/bin/goswitch
 ```
 
