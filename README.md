@@ -47,10 +47,11 @@ Commands:
    use <version> default:          set ~/.profile to use that version in next login session
                                    or if you source ~/.profile script
 
-   local-project [dir]:            use [dir] or current directory if [dir] is not
+   local-project [dir] [version]:  use [dir] or current directory if [dir] is not
                                    provided to create a local projecct. That creates
                                    a bin/activate to use with 'source' command
                                    eg. goswitch local-project /tmp/myproject
+                                   If [version] is not set, the current go version will be used
 
    bash-completion:                set bash completion, please do 'source <(goswitch bash-completion)'
                                    You may add this line in you ~/.bashrc
@@ -81,8 +82,13 @@ To use that version in current shell
 
 ```
 eval $(goswitch use 1.9.1)
+# or
+source <goswitch use 1.9.1)
 ```
 
+Note that if you pass from a version to another, the binaries and packages you were using with the last used version will not be available in the new environment. Even if that can be nice to do that, the functionnality could be very complicated to do, and it can create some bad behaviors. So, please, reinstall packages and binaries for that version.
+
+**Do not try to copy pkg or bin directory from version to version, it is not safe and will slow down compilation, use "go get" command instead**
 
 To use that version by default, following command will set variables in ~/.profile:
 
@@ -124,6 +130,16 @@ deactivate
 The last GOPATH and PATH are now set up to the default.
 
 **NOTE**: If the path is not provided, so goswitch will create directories and scripts in the current directory.
+
+
+You can also set a go version for a project (either it will use the current go version):
+
+```
+goswitch local-project ~/Projects/myproject 1.9.1
+```
+
+It will set the go version to 1.9.1 as soon as you "activate" the project. The deactivation command will reset you version to the last used (the version you were using before activating the project environemnt).
+
 
 ## Recommended packages
 
