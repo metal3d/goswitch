@@ -159,7 +159,7 @@ export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
 # ${END_COMMENT}
 EOF
 
-    echo -e "\E[036mOk, you can now open new shell and/or reload ~/.profile (source ~/.profile)" >&2
+    echo -e "\033[36mOk, you can now open new shell and/or reload ~/.profile (source ~/.profile)\033[0m" >&2
     fi
 }
 
