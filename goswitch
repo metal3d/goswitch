@@ -301,7 +301,7 @@ export _OLD_PS1=\$PS1
 export GOPATH=${folder}:\$GOPATH
 export PATH=${folder}/bin:\$PATH
 
-proj=\`basename \${folder}\`
+proj=\`basename ${folder}\`
 export PS1="(\$proj) \$PS1"
 
 # Taken from python virtualenv
