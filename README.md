@@ -83,7 +83,7 @@ To use that version in current shell
 ```
 eval $(goswitch use 1.9.1)
 # or
-source <goswitch use 1.9.1)
+source <(goswitch use 1.9.1)
 ```
 
 Note that if you pass from a version to another, the binaries and packages you were using with the last used version will not be available in the new environment. Even if that can be nice to do that, the functionnality could be very complicated to do, and it can create some bad behaviors. So, please, reinstall packages and binaries for that version.
