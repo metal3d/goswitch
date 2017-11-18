@@ -228,10 +228,11 @@ printHelp(){
     echo "   use <version> default:          set ~/.profile to use that version in next login session"
     echo "                                   or if you "source" ~/.profile script"
     echo
-    echo "   local-project [dir]:            use [dir] or current directory if [dir] is not"
+    echo "   local-project [dir] [version]:  use [dir] or current directory if [dir] is not"
     echo "                                   provided to create a local projecct. That creates"
     echo "                                   a bin/activate to use with 'source' command"
     echo "                                   eg. ${_CMD} local-project /tmp/myproject"
+    echo "                                   If [version] is not set, the current go version will be used"
     echo
     echo "   bash-completion:                set bash completion, please do 'source <(${_CMD} bash-completion)'"
     echo "                                   You may add this line in you ~/.bashrc"
@@ -253,7 +254,13 @@ printHelp(){
 
 
 local_project() {
-    [[ -z "$1" ]] && folder="." || folder=$1
+    _USE=""
+    [ -z "$1" ] && folder="." || folder=$1
+    if [ -n "$2" ]; then
+        # use another version
+        ${_CMD} install $2
+        _USE="source <(${_CMD} use $2)"
+    fi
     folder=$(realpath $folder)
     mkdir -p ${folder}/{src,bin,pkg}
     cat > ${folder}/bin/activate << EOF
@@ -266,6 +273,10 @@ local_project() {
 
 # Deactivation command (function set by environment activation)
 function deactivate() {
+    if [ -n "\$_OLD_GOROOT" ]; then
+        GOROOT="\$_OLD_GOROOT"
+        unset _OLD_GOPATH
+    fi
     if [ -n "\$_OLD_GOPATH" ]; then
         GOPATH="\$_OLD_GOPATH"
         unset _OLD_GOPATH
@@ -283,6 +294,7 @@ function deactivate() {
     
     export PS1
     export PATH
+    export GOROOT
     export GOPATH
 
     unset deactivate
@@ -293,9 +305,12 @@ function deactivate() {
 VIRTUAL_ENV=${folder}
 
 # Keep old paths
+export _OLD_GOROOT=\$GOROOT
 export _OLD_GOPATH=\$GOPATH
 export _OLD_PATH=\$PATH
 export _OLD_PS1=\$PS1
+
+${_USE}
 
 # set new paths
 export GOPATH=${folder}:\$GOPATH
@@ -444,7 +459,7 @@ case $1 in
 
     local-project)
         auto_check
-        local_project $2
+        local_project $2 $3
         ;;
 
     list-recommended)
