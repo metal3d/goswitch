@@ -137,7 +137,20 @@ setpath(){
         esac
     fi
 
+    # Find old goroot and gopath from PATH, then
+    # remove from the list.
+    P=$(IFS=:; echo $PATH)
+    NEWPATH=()
+    for p in ${P[@]}; do
+        if [ "$(echo "$p" | grep -P "$_ROOT")" == "" ] ; then
+            NEWPATH+=( $p )
+        fi
+    done
+    NEWPATH=$(IFS=:; echo "${NEWPATH[*]}")
+
     echo "# you must call eval \$("$(basename $0)" use ${VERSION})"
+    echo "# reset path without old gopath"
+    echo "export PATH=${NEWPATH}"
     [ -d ${GOROOT} ] && echo "export GOROOT=${GOROOT}; export PATH=\$GOROOT/bin:\$PATH"
     [ -d ${GOPATH} ] && echo "export GOPATH=${GOPATH}; export PATH=\$GOPATH/bin:\$PATH"
 
@@ -254,8 +267,12 @@ printHelp(){
 
 
 local_project() {
-    _USE=""
     [ -z "$1" ] && folder="." || folder=$1
+
+    _USE=""
+    current_version=$(echo $PATH | awk -F":" '/go-/{print gensub(/.*go-([0-9]+\.[0-9]+\.[0-9]+).*/,"\\1", "g", $0)}' | head -n1)
+    [ x"$current_version" != "x" ] && _USE="source <(${_CMD} use ${current_version})"
+
     if [ -n "$2" ]; then
         # use another version
         ${_CMD} install $2
