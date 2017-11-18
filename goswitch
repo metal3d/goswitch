@@ -301,7 +301,7 @@ export _OLD_PS1=\$PS1
 export GOPATH=${folder}:\$GOPATH
 export PATH=${folder}/bin:\$PATH
 
-export PS1="(`dirname ${folder}`) $PS1"
+export PS1="(`dirname ${folder}`) \$PS1"
 
 # Taken from python virtualenv
 # This should detect bash and zsh, which have a hash command that must
