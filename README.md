@@ -61,7 +61,7 @@ Commands:
 
    -h|--help:                      print this help
 
-   -v|--version|-version:          print version (0.0.9)
+   -v|--version|-version:          print version
 ```
 
 
