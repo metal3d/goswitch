@@ -43,7 +43,7 @@ Commands:
 
    local-project [dir]:            use [dir] or current directory if [dir] is not
                                    provided to create a local projecct. That creates
-                                   a bin/activate and bin/deactivate to use with 'source' command
+                                   a bin/activate to use with 'source' command
                                    eg. goswitch local-project /tmp/myproject
 
    bash-completion:                set bash completion, please do 'source <(goswitch bash-completion)'
@@ -96,7 +96,7 @@ goswitch local-project ~/Projects/myproject
 
 That creates three directories:
 
-- `~/Projects/myproject/bin` where `activate` and `deactivate` scripts are installed. Also, `go get` command will install binaries here.
+- `~/Projects/myproject/bin` where `activate` scripts is installed. Also, `go get` command will install binaries here.
 - `~/Projects/myproject/pkg` where local package are compiled
 - `~/Projects/myproject/src` where you should create you subdirectory to work on. Also, `go get` command will install sources here
 
@@ -109,10 +109,10 @@ source ~/Projects/myproject/bin/activate
 
 That will set GOPATH and PATH environment to use the project environment by default. But your default GOPATH is also inserted to be able to use global packages that you already have installed.
 
-To deactivate:
+To deactivate, the activation script has created a "deactivate" function that you can call as a command:
 
 ```bash
-source ~/Projects/myproject/bin/deactivate
+deactivate
 ```
 
 The last GOPATH and PATH are now set up to the default.
