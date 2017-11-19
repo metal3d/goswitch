@@ -388,7 +388,7 @@ fi
 echo -ne "\\033[32m"
 echo "Now in a local project for Go"
 echo "go get command will install in ${folder}/bin and ${folder}/src"
-echo "Your project sources should be located in ${folder}/src/<DIR> where <DIR> are packages directory (eg. ${folder}/src/mypackage"
+echo "Your project sources should be located in ${folder}/src/<DIR> where <DIR> are packages directory (eg. ${folder}/src/mypackage)"
 echo 
 echo -ne "\\033[0m"
 EOF
