@@ -35,13 +35,24 @@ sudo chmod +x /usr/local/bin/goswitch
 
 ```
 goswitch command <version>
+
+You can override some configuration by setting values in /home/pafer/.config/goswitch/config.cfg file,
+or using environment variables:
+    GS_ROOT:   directory where go will be installed
+    GS_DIALOG: force dialog to be one of zenity, whiptail or dialog
+Example:
+    GS_ROOT=/tmp/gopath GS_DIALOG=whiptail goswitch install latest
+
 Commands:
-   list:                           list installed version from /home/pafer/.go directory
+   list:                           list installed version from ~/.go directory
 
    available:                      list installable go version from golang.org
 
    install <version>:              install go-<version> (version should be x.y.z,
                                    eg. goswitch install 1.9.1)
+
+   install-package <keyword>:      Search package by keyword on go-search.org, then display a list to 
+                                   let you select which one to install.
 
    use <version>:                  to be call with "eval $(goswitch use <version>)"
                                    to set env vars on current shell
@@ -106,6 +117,33 @@ GoSwitch will try to use "zenity" (if you're in a graphical environment), either
 
 ![](./images/zenity.png)
 ![](./images/dialog.png)
+
+
+## Configuration
+
+At this time, you can override configuration by using your `$HOME/.config/goswitch/config.cfg`, Uncommand line that you want to change and setup values:
+
+```
+# Where golang will be installed
+#root = $HOME/.go
+
+# Prefered dialog, goswitch detect if a X session is active
+# and tries to use zenity. If you want to always use dialog, whiptail
+# or xdialog, set it here
+#prefered_dialog = dialog
+```
+
+You can also set environment values:
+
+- `GS_ROOT` is the root path where golang will be installed
+- `GS_DIALOG` can override the dialog, you can use "zenity", "whiptail", or "dialog"
+
+Note that variables can be passed as command prefix instead of use "export":
+
+```
+GS_ROOT=/tmp/gopath goswitch install latest
+```
+
 
 ## Virtual environment like Python
 
