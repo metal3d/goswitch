@@ -17,6 +17,7 @@
 # whether in an action of contract, tort or otherwise, arising from, out of or in connection with the
 # software or the use or other dealings in the Software.
 
+
 _CMD=$(basename $0)
 _ROOT=${GS_ROOT:-${HOME}/.go}
 _GOROOTPATH=${_ROOT}/root
@@ -588,6 +589,7 @@ search_install(){
 }
 
 
+# load configuration variables from config file.
 load_config() {
     make_config
     local config_file=$_CONF/config.cfg
@@ -617,10 +619,10 @@ EOF
 
         case $key in
             root)
-                _ROOT="$val"
+                [ "$GS_ROOT" == ""] && _ROOT="$val"
                 ;;
             prefered_dialog)
-                _DIALOG="$val"
+                [ "$GS_DIALOG" == "" ] && _DIALOG="$val"
                 ;;
             *)
                 echo "Unroconized configuration key $key"
@@ -631,6 +633,7 @@ EOF
 }
 
 
+# load configuration
 load_config
 
 # make a check of version only for other commands than
