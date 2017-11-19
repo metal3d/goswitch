@@ -36,7 +36,7 @@ sudo chmod +x /usr/local/bin/goswitch
 ```
 goswitch command <version>
 
-You can override some configuration by setting values in /home/pafer/.config/goswitch/config.cfg file,
+You can override some configuration by setting values in ~/.config/goswitch/config.cfg file,
 or using environment variables:
     GS_ROOT:   directory where go will be installed
     GS_DIALOG: force dialog to be one of zenity, whiptail or dialog
