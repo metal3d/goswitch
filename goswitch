@@ -58,12 +58,12 @@ version(){
 checkupdate(){
     make_config
     date +"%s" > $_CONF/lastchecked
-    TMP=$(mktemp)
+    local TMP=$(mktemp)
     curl -sSL https://api.github.com/repos/metal3d/goswitch/releases/latest > $TMP
-    latest=$(awk '/"tag_name"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
+    local latest=$(awk '/"tag_name"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
     latest=$(echo "$latest" | sed 's/^v//')
 
-    checked=$(printf "$_VERSION\n$latest" | sort -ruV | head -n1)
+    local checked=$(printf "$_VERSION\n$latest" | sort -ruV | head -n1)
 
     if [ $checked == $_VERSION ]; then
         if [ "$1" != "check" ] ; then
@@ -79,9 +79,9 @@ checkupdate(){
                 echo -ne "\033[0m"
                 ;;
             "update")
-                where=$(which $_CMD)
+                local where=$(which $_CMD)
                 echo "Installing new version $latest"
-                url=$(awk '/"tarball_url"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
+                local url=$(awk '/"tarball_url"/{print gensub(/"(.*)"./, "\\1", "g", $2)}' $TMP)
                 update "$url" "$where"
                 ;;
         esac
@@ -91,10 +91,10 @@ checkupdate(){
 
 # update goswitch to the latest version.
 update() {
-    url=$1
-    where=$2
+    local url=$1
+    local where=$2
 
-    F=$(mktemp -d)
+    local F=$(mktemp -d)
     pushd $F 2>&1 > /dev/null
         curl -sSL "$url" | tar -xzf - --strip=1 */goswitch
         mv goswitch $where
@@ -108,9 +108,9 @@ update() {
 auto_check(){
     make_config
     [ ! -f $_CONF/lastchecked ] && date +"%s" > $_CONF/lastchecked
-    lastchecked=$(cat $_CONF/lastchecked)
-    current=$(date +"%s")
-    spent=$((current-lastchecked))
+    local lastchecked=$(cat $_CONF/lastchecked)
+    local current=$(date +"%s")
+    local spent=$((current-lastchecked))
     if [ $spent -gt 86400 ]; then
         checkupdate "check"
     fi
@@ -151,8 +151,8 @@ setpath(){
 
     # Find old goroot and gopath from PATH, then
     # remove from the list.
-    P=$(IFS=:; echo $PATH)
-    NEWPATH=()
+    local P=$(IFS=:; echo $PATH)
+    local NEWPATH=()
     for p in ${P[@]}; do
         if [ "$(echo "$p" | grep -P "$_ROOT")" == "" ] ; then
             NEWPATH+=( $p )
@@ -168,11 +168,11 @@ setpath(){
 
     if [ "$2" == "default" ]; then
 
-        START_COMMENT="- GOSWITCH - START - DO NOT REMOVE THAT COMMENT"
-        END_COMMENT="- GOSWITCH - END - DO NOT REMOVE THAT COMMENT"
+        local START_COMMENT="- GOSWITCH - START - DO NOT REMOVE THAT COMMENT"
+        local END_COMMENT="- GOSWITCH - END - DO NOT REMOVE THAT COMMENT"
 
         # Remove old entry
-        SEDREM="sed -i '/${START_COMMENT}/,/${END_COMMENT}/d' ~/.profile"
+        local SEDREM="sed -i '/${START_COMMENT}/,/${END_COMMENT}/d' ~/.profile"
         eval $SEDREM
 
         # add new entry
@@ -201,17 +201,17 @@ install_go(){
     echo "install go version $VERSION"
     exit
 
-    ARCH=$(uname -p | tr "[A-Z]" "[a-z]")
+    local ARCH=$(uname -p | tr "[A-Z]" "[a-z]")
     case $ARCH in
         x86_64)
             ARCH="amd64"
     esac
-    SYS=$(uname -s | tr "[A-Z]" "[a-z]")
+    local SYS=$(uname -s | tr "[A-Z]" "[a-z]")
 
-    u="https://storage.googleapis.com/golang/go${VERSION}.${SYS}-${ARCH}.tar.gz"
+    local u="https://storage.googleapis.com/golang/go${VERSION}.${SYS}-${ARCH}.tar.gz"
 
     echo "Downloading $u"
-    GOROOT=${_GOROOTPATH}/go-${VERSION}
+    local GOROOT=${_GOROOTPATH}/go-${VERSION}
     [ -d ${GOROOT} ] && echo -e "\E[32m$GOROOT already exists, if you want to reinstall, please remove that directory first\E[0m" && exit 1
 
     pushd /tmp 2>&1 >/dev/null
@@ -230,7 +230,7 @@ install_go(){
     popd 2>&1 >/dev/null
 
     # create GOPATH
-    GOPATH=${_GOPATH}/go-${VERSION}
+    local GOPATH=${_GOPATH}/go-${VERSION}
     mkdir -p $GOPATH/bin
     mkdir -p $GOPATH/pkg
     mkdir -p $GOPATH/src
@@ -297,9 +297,12 @@ printHelp(){
 # create local project with a specified golang version, create directories
 # and initiate a "activate" script.
 local_project() {
+    local folder=""
+    local current_version=""
+
     [ -z "$1" ] && folder="." || folder=$1
 
-    _USE=""
+    local _USE=""
     if [ -n "$2" ]; then
         # use another version
         ${_CMD} install $2
@@ -369,8 +372,8 @@ export PS1="(\$proj) \$PS1"
 # Taken from python virtualenv
 # This should detect bash and zsh, which have a hash command that must
 # be called to get it to forget past commands.  Without forgetting
-# past commands the $PATH changes we made may not be respected
-if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
+# past commands the \$PATH changes we made may not be respected
+if [ -n "\$BASH" -o -n "\$ZSH_VERSION" ] ; then
     hash -r
 fi
 
@@ -428,16 +431,16 @@ EOF
 
 # list recommended packages.
 list_recommended(){
-    COUNT=${#_RECOMMENDED[@]}
+    local COUNT=${#_RECOMMENDED[@]}
     for ((i=0; i<$COUNT; i++)); do
-        line=${_RECOMMENDED[i]}
+        local line=${_RECOMMENDED[i]}
         echo $line | cut -f1 -d":"
     done
 }
 
 # install recommended packages.
 install_recommended(){
-    toinstall=$1
+    local toinstall=$1
     
     if [ -z "$toinstall" ]; then
         echo -n "You need to give a recommended package name, (see ${_CMD} list-recommended)"
@@ -446,16 +449,16 @@ install_recommended(){
         exit 1
     fi
 
-    COUNT=${#_RECOMMENDED[@]}
-    OK="false"
+    local COUNT=${#_RECOMMENDED[@]}
+    local OK="false"
     for ((i=0; i<$COUNT; i++)); do
-        line=${_RECOMMENDED[i]}
-        what=$(echo $line | cut -f1 -d":")
+        local line=${_RECOMMENDED[i]}
+        local what=$(echo $line | cut -f1 -d":")
         if [ $toinstall == "all" ] || [ $toinstall == $what ]; then
-            goget=$(echo $line | cut -f2 -d":")
+            local goget=$(echo $line | cut -f2 -d":")
             echo "Installing $what"
             echo $goget
-            $goget
+            eval $goget
             OK="true"
         fi
     done
@@ -488,10 +491,13 @@ search_install(){
         exit 1
     fi
 
-    found=$(curl -sSL "http://go-search.org/api?action=search&q=$search" | \
+    echo "Searching $search on go-search.org..."
+    local found=$(curl -sSL "http://go-search.org/api?action=search&q=$search" | \
         jq -r '.hits | map([.package,.synopsis] | join("| ")) | join("|")')
 
-    IFS="|"
+    local OLDIFS=$IFS
+    local IFS="|"
+
     options=()
     for f in $found; do
         if [ "$f" == " " ]; then
@@ -511,25 +517,62 @@ search_install(){
     fi
 
 
-    CHOOSE=""
-    if [ "$in_X" == "true" ]; then
-        CHOOSE=$(zenity --title="$title" --width=600 --height=400 --list --column="Import" --column="Description" "${options[@]}")
-    else
-        # use whiptail or dialog ?
-        cmd=$(which whiptail 2>&1 >/dev/null && echo "whiptail" || echo "dialog")
+    local CHOOSE=""
+    local cols=""
+    local rows=""
+    local dialog="dialog"
 
+    # use whiptail or dialog ?
+    dialog=$(which whiptail 2>&1 >/dev/null && echo "whiptail" || echo "$dialog")
+    if [ "$in_X" == "true" ]; then
+        CHOOSE=$(zenity --title="$title" --width=600 --height=400 \
+            --list --column="Import" --column="Description" "${options[@]}")
+    else
         cols=$(stty size | cut -f2 -d" ")
         rows=$(stty size | cut -f1 -d" ")
         T=$(mktemp)
         
-        $cmd --title="$title" --menu "Select one" $((rows-4)) $((cols-4)) $((rows-10)) -- ${options[*]} 2>$T
+        $dialog --title="$title" --menu "Select one" $((rows-4)) $((cols-4)) $((rows-10)) -- ${options[*]} 2>$T
         CHOOSE=$(cat $T)
         rm -f $T
     fi
 
     if [ "$CHOOSE" != "" ]; then
-        echo "Installing $CHOOSE"
-        go get -u "$CHOOSE"
+        local install_cmd="go get -u"
+        local RET=""
+        if [ -f ./glide.yaml ]; then
+
+            local msg=""
+            msg+="Glide is detected in you current directory, "
+            msg+="would you like to use Glide to install $CHOOSE package as a vendor package ?"
+
+            local note="Note: if you choose glide installation, please check your terminal to answer some questions."
+
+            if [ $in_X == "true" ]; then
+                zenity --question --text="${msg}\n\n<i>${note}</i>" --width=340
+                RET=$?
+            else
+                $dialog --yesno "${msg}\n\n${note}" 20 50
+                RET=$?
+            fi
+
+            if [ $RET == 0 ]; then
+                install_cmd="glide get"
+            fi
+        fi
+
+        # back to default IFS
+        IFS=$OLDIFS
+        local WAIT=3
+        echo "Will install $CHOOSE"
+        # start at WAIT+1 to let one second pass.
+        for i in $(seq $((WAIT+1))); do
+            echo -ne "You've got 3 seconds to cancel (press CTRL+C): $((WAIT-i+1)) \r"
+            sleep 1
+        done
+
+        echo "installing..."
+        eval $install_cmd "$CHOOSE"
     else
         echo "Canceled"
     fi
@@ -598,6 +641,7 @@ case $1 in
         ;;
 
     install-package)
+        auto_check
         search_install $2
         ;;
 
