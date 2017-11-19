@@ -12,6 +12,7 @@ Also, goswitch can do:
 - bash completion
 - autoupdate itself
 
+[![asciicast](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT.png)](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT)
 
 ## Installation
 
