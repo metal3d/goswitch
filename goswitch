@@ -18,11 +18,12 @@
 # software or the use or other dealings in the Software.
 
 _CMD=$(basename $0)
-_ROOT="$HOME/.go"
+_ROOT=${GS_ROOT:-${HOME}/.go}
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
-_VERSION=1.0.5
+_VERSION=1.0.6
 _CONF=$HOME/.config/goswitch
+_DIALOG=${GS_DIALOG}
 
 
 # taken from https://github.com/fatih/vim-go
@@ -46,7 +47,6 @@ _RECOMMENDED=(
 "delve:          go get -u github.com/derekparker/delve/cmd/dlv"
 "glide:          go get -u github.com/Masterminds/glide"
 )
-
 
 
 # get the version of goswitch.
@@ -199,7 +199,6 @@ install_go(){
     fi
 
     echo "install go version $VERSION"
-    exit
 
     local ARCH=$(uname -p | tr "[A-Z]" "[a-z]")
     case $ARCH in
@@ -253,6 +252,14 @@ remote_list(){
 # displays help.
 printHelp(){
     echo "${_CMD} command <version>"
+    echo
+    echo "You can override some configuration by setting values in $_CONF/config.cfg file,"
+    echo "or using environment variables:"
+    echo "    GS_ROOT:   directory where go will be installed"
+    echo "    GS_DIALOG: force dialog to be one of zenity, whiptail or dialog"
+    echo "Example:"
+    echo -e "\033[34m    GS_ROOT=/tmp/gopath GS_DIALOG=whiptail ${_CMD} install latest\033[0m"
+    echo 
     echo "Commands:"
     echo "   list:                           list installed version from $_ROOT directory"
     echo
@@ -495,6 +502,7 @@ search_install(){
     local found=$(curl -sSL "http://go-search.org/api?action=search&q=$search" | \
         jq -r '.hits | map([.package,.synopsis] | join("| ")) | join("|")')
 
+    local dialog="$_DIALOG"
     local OLDIFS=$IFS
     local IFS="|"
 
@@ -510,29 +518,30 @@ search_install(){
 
     title="Select a package - results from go-seach.org"
 
-    in_X="false"
-    if [ "$XDG_CURRENT_DESKTOP" != "" ]; then
-        # we've got desktop, try to find zenity
-        in_X=$(which zenity 2>&1 >/dev/null && echo "true" || echo "false")
+    if [ "$dialog" == "" ]; then
+        if [ "$XDG_CURRENT_DESKTOP" != "" ]; then
+            # we've got desktop, try to find zenity
+            dialog=$(which zenity 2>&1 >/dev/null && echo "zenity" || echo "dialog" )
+        else
+            # use whiptail or dialog ?
+            dialog=$(which whiptail 2>&1 >/dev/null && echo "whiptail" || echo "$dialog")
+        fi
     fi
 
 
     local CHOOSE=""
     local cols=""
     local rows=""
-    local dialog="dialog"
 
-    # use whiptail or dialog ?
-    dialog=$(which whiptail 2>&1 >/dev/null && echo "whiptail" || echo "$dialog")
-    if [ "$in_X" == "true" ]; then
-        CHOOSE=$(zenity --title="$title" --width=600 --height=400 \
+    if [ "$dialog" == "zenity" ]; then
+        CHOOSE=$($dialog --title="$title" --width=600 --height=400 \
             --list --column="Import" --column="Description" "${options[@]}")
     else
         cols=$(stty size | cut -f2 -d" ")
         rows=$(stty size | cut -f1 -d" ")
         T=$(mktemp)
         
-        $dialog --title="$title" --menu "Select one" $((rows-4)) $((cols-4)) $((rows-10)) -- ${options[*]} 2>$T
+        $dialog --title "$title" --menu "Select one" $((rows-4)) $((cols-4)) $((rows-10)) -- ${options[*]} 2>$T
         CHOOSE=$(cat $T)
         rm -f $T
     fi
@@ -548,11 +557,11 @@ search_install(){
 
             local note="Note: if you choose glide installation, please check your terminal to answer some questions."
 
-            if [ $in_X == "true" ]; then
-                zenity --question --text="${msg}\n\n<i>${note}</i>" --width=340
+            if [ $dialog == "zenity" ]; then
+                $dialog --title="Glide usage" --question --text="${msg}\n\n<i>${note}</i>" --width=340
                 RET=$?
             else
-                $dialog --yesno "${msg}\n\n${note}" 20 50
+                $dialog --title "Glide usage" --yesno "${msg}\n\n${note}" 20 50
                 RET=$?
             fi
 
@@ -578,6 +587,51 @@ search_install(){
     fi
 }
 
+
+load_config() {
+    make_config
+    local config_file=$_CONF/config.cfg
+
+    if [ ! -f $config_file ]; then
+        cat > $config_file << EOF
+# Where golang will be installed
+#root = \$HOME/.go
+
+# Prefered dialog, goswitch detect if a X session is active
+# and tries to use zenity. If you want to always use dialog, whiptail
+# or xdialog, set it here
+#prefered_dialog=dialog
+EOF
+        echo -e "\033[34m$config_file created\033[0m" >&2
+    fi
+    
+
+    while read line; do
+        line=$(echo "$line" | awk -F'#' '{print $1}' )
+        [ "$line" == "" ] && continue
+
+        local IFS="="
+        line=( $line )
+        local key=$(echo "${line[0]}" | sed 's/ //g' )
+        local val=$(echo "${line[1]}" | sed 's/ //g' )
+
+        case $key in
+            root)
+                _ROOT="$val"
+                ;;
+            prefered_dialog)
+                _DIALOG="$val"
+                ;;
+            *)
+                echo "Unroconized configuration key $key"
+                exit 1
+        esac
+
+    done < $config_file
+}
+
+
+load_config
 
 # make a check of version only for other commands than
 # completion and update/check-update commands, to not 
