@@ -12,6 +12,8 @@ Also, goswitch can do:
 - bash completion
 - autoupdate itself
 
+<script type="text/javascript" src="https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT.js" id="asciicast-ntefDCh2PTIV68m0yxKFb1qUT" async></script>
+
 [![asciicast](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT.png)](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT)
 
 ## Installation
