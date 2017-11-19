@@ -21,7 +21,7 @@ _CMD=$(basename $0)
 _ROOT=${GS_ROOT:-${HOME}/.go}
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
-_VERSION=1.0.5
+_VERSION=1.0.6
 _CONF=$HOME/.config/goswitch
 _DIALOG=${GS_DIALOG}
 
