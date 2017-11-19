@@ -3,21 +3,15 @@
 GoSwitch is a bash script that can install and switch golang version. It has got others options:
 
 - it can install recommended packages as glide, gocode, glide, and so on
-- it is able to create local project using a specific golang version (as Python VirtualEnv)
+- it is able to create [local project](#virtual-environment-like-python) using a specific golang version (as Python VirtualEnv)
 - you can check golang versions that are available
-- search and make proposition to install packages based on keywords (thanks to [Go-Search](http://go-search.org))
+- [search and make proposition to install packages](#search-and-install-packages) based on keywords (thanks to [Go-Search](http://go-search.org))
 
 Also, goswitch can do:
 
 - bash completion
 - autoupdate itself
 
-
-# What about GVM ?
-
-Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script.
-
-GoSwitch script is just a bit less heavy (it's a bash script). GVM is a great project that you should use if goswitch doesn't answer to your needs.
 
 ## Installation
 
@@ -208,3 +202,9 @@ goswitch update
 If a new version is available, that command will try to install the script at the same place.
 
 Note that to check if you've already checked version, GoSwitch writes a file in `.config/goswitch/` directory.
+
+# What about GVM ?
+
+Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script.
+
+GoSwitch script is just a bit less heavy (it's a bash script). GVM is a great project that you should use if goswitch doesn't answer to your needs.
