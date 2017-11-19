@@ -18,10 +18,10 @@ Also, goswitch can do:
 
 ```bash
 # basic installation
-bash <(curl -sSL https://github.com/metal3d/goswitch/blob/master/install.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/metal3d/goswitch/master/install.sh)
 
 #if you want to install on /usr/local, please use sudo:
-sudo bash <(curl -sSL https://github.com/metal3d/goswitch/blob/master/install.sh)
+sudo bash <(curl -sSL https://raw.githubusercontent.com/metal3d/goswitch/master/install.sh)
 ```
 
 ## Usage
