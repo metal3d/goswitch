@@ -22,7 +22,7 @@ _CMD=$(basename $0)
 _ROOT=${GS_ROOT:-${HOME}/.go}
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
-_VERSION=1.0.6
+_VERSION=1.0.7
 _CONF=$HOME/.config/goswitch
 _DIALOG=${GS_DIALOG}
 
@@ -333,7 +333,7 @@ local_project() {
 function deactivate() {
     if [ -n "\$_OLD_GOROOT" ]; then
         GOROOT="\$_OLD_GOROOT"
-        unset _OLD_GOPATH
+        unset _OLD_GOROOT
     fi
     if [ -n "\$_OLD_GOPATH" ]; then
         GOPATH="\$_OLD_GOPATH"
@@ -388,9 +388,9 @@ fi
 echo -ne "\\033[32m"
 echo "Now in a local project for Go"
 echo "go get command will install in ${folder}/bin and ${folder}/src"
-echo "Your project sources should be located in ${folder}/src/<DIR> where <DIR> are packages directory (eg. ${folder}/src/mypackage"
-echo 
+echo "Your project sources should be located in ${folder}/src/<DIR> where <DIR> are packages directory (eg. ${folder}/src/mypackage)"
 echo -ne "\\033[0m"
+echo 
 EOF
 
     echo "You can now use:" 

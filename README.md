@@ -12,23 +12,16 @@ Also, goswitch can do:
 - bash completion
 - autoupdate itself
 
+[![asciicast](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT.png)](https://asciinema.org/a/ntefDCh2PTIV68m0yxKFb1qUT)
 
 ## Installation
 
-```
-# If ~/.local/bin is in your PATH (recommended)
-curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/latest | \
-    grep tarball | cut -d '"' -f 4) | \
-    tar -zxf - --strip-components=1 -C ~/.local/bin */goswitch
+```bash
+# basic installation
+bash <(curl -sSL https://github.com/metal3d/goswitch/blob/master/install.sh)
 
-chmod +x ~/.local/bin/goswitch
-
-# OR
-sudo curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/latest | \
-    grep tarball | cut -d '"' -f 4) | \
-    tar -zxf - --strip-components=1 -C ~/usr/local/bin */goswitch
-
-sudo chmod +x /usr/local/bin/goswitch
+#if you want to install on /usr/local, please use sudo:
+sudo bash <(curl -sSL https://github.com/metal3d/goswitch/blob/master/install.sh)
 ```
 
 ## Usage
