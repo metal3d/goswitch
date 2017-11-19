@@ -21,7 +21,7 @@ _CMD=$(basename $0)
 _ROOT="$HOME/.go"
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
-_VERSION=1.0.3
+_VERSION=1.0.4
 _CONF=$HOME/.config/goswitch
 
 
@@ -48,10 +48,13 @@ _RECOMMENDED=(
 )
 
 
+
+# get the version of goswitch.
 version(){
     echo "$_VERSION"
 }
 
+# check if new goswitch version exists.
 checkupdate(){
     make_config
     date +"%s" > $_CONF/lastchecked
@@ -86,6 +89,7 @@ checkupdate(){
     rm -rf $TMP
 }
 
+# update goswitch to the latest version.
 update() {
     url=$1
     where=$2
@@ -100,6 +104,7 @@ update() {
 }
 
 
+# called periodically to check if a newest goswitch version is available.
 auto_check(){
     make_config
     [ ! -f $_CONF/lastchecked ] && date +"%s" > $_CONF/lastchecked
@@ -112,14 +117,21 @@ auto_check(){
 }
 
 
+# create configuration directory.
 make_config(){
     [ ! -d $_CONF ] && mkdir -p $_CONF
 }
 
+# use the specified version
 setpath(){
-    VERSION=$1
-    GOROOT=${_GOROOTPATH}/go-${VERSION}
-    GOPATH=${_GOPATH}/go-${VERSION}
+    local VERSION=$1
+
+    if [ $VERSION == "latest" ]; then
+        VERSION=$(remote_list | head -n1)
+    fi
+
+    local GOROOT=${_GOROOTPATH}/go-${VERSION}
+    local GOPATH=${_GOPATH}/go-${VERSION}
 
     if [ ! -d $GOROOT ]; then
         echo "Go $VERSION is not installed, would you like to install it right now ?"
@@ -176,9 +188,19 @@ EOF
     fi
 }
 
+
+# install specified golang version.
 install_go(){
-    echo "install go $1"
-    VERSION=$1
+
+    local VERSION=$1
+
+    if [ "$VERSION" == "latest" ]; then
+        VERSION=$(remote_list | head -n1)
+    fi
+
+    echo "install go version $VERSION"
+    exit
+
     ARCH=$(uname -p | tr "[A-Z]" "[a-z]")
     case $ARCH in
         x86_64)
@@ -214,17 +236,21 @@ install_go(){
     mkdir -p $GOPATH/src
 }
 
-
+# list installed golang on the system.
 list_go(){
+    local installed=""
     for v in $(ls -1 $_GOROOTPATH); do
-        echo $v | sed 's/^go-//'
+        installed+=$(echo $v | sed 's/^go-//')"\n"
     done
+    echo -e $installed | sort -Vru
 }
 
+# liste available golang version from website.
 remote_list(){
-    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -ru
+    curl -sL https://golang.org/dl/ | grep -o 'id="go.*"' | sed -r 's/id=".*go(.*)"/\1/' | uniq | sort -Vru
 }
 
+# displays help.
 printHelp(){
     echo "${_CMD} command <version>"
     echo "Commands:"
@@ -235,6 +261,9 @@ printHelp(){
     echo "   install <version>:              install go-<version> (version should be x.y.z,"
     echo "                                   eg. ${_CMD} install 1.9.1)"
     echo
+    echo "   install-package <keyword>:      Search package by keyword on go-search.org, then display a list to "
+    echo "                                   let you select which one to install."
+    echo 
     echo "   use <version>:                  to be call with \"eval \$(${_CMD} use <version>)\""
     echo "                                   to set env vars on current shell"
     echo
@@ -265,7 +294,8 @@ printHelp(){
     echo "   -v|--version|-version:          print version ($_VERSION)"
 }
 
-
+# create local project with a specified golang version, create directories
+# and initiate a "activate" script.
 local_project() {
     [ -z "$1" ] && folder="." || folder=$1
 
@@ -360,6 +390,7 @@ EOF
     echo "deactivate"
 }
 
+# generate bash completion function.
 completion() {
     cat << EOF
 # bash completion for ${_CMD}                                   -*- shell-script -*-
@@ -369,7 +400,7 @@ __start_${_CMD}()
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    opts="install use list available local-project --help -h help bash-completion install-recommended list-recommended -v --version version check-update update"
+    opts="install use list available local-project --help -h help bash-completion install-package install-recommended list-recommended -v --version version check-update update"
 
     case \${prev} in 
         local-project)
@@ -395,6 +426,7 @@ EOF
 
 }
 
+# list recommended packages.
 list_recommended(){
     COUNT=${#_RECOMMENDED[@]}
     for ((i=0; i<$COUNT; i++)); do
@@ -403,6 +435,7 @@ list_recommended(){
     done
 }
 
+# install recommended packages.
 install_recommended(){
     toinstall=$1
     
@@ -432,6 +465,70 @@ install_recommended(){
         echo -n " to check if you didn't make a mistake"
         echo 
         exit 1
+    fi
+}
+
+# search package by keyword on go-search.org, then display the list.
+# The selected package is installed.
+search_install(){
+    # try to find jq
+    which jq 2>&1 >/dev/null
+    if [ $? != 0 ]; then
+        echo -ne "\033[31m"
+        echo "Sorry, you should install \"jq\" command to be able to search and install package"
+        echo -ne "\033[0m"
+        exit 1
+    fi
+
+    local search=$1
+    if [ "$search" == "" ]; then
+        echo -ne "\033[31m"
+        echo "Please, give a package name to search"
+        echo -ne "\033[0m"
+        exit 1
+    fi
+
+    found=$(curl -sSL "http://go-search.org/api?action=search&q=$search" | \
+        jq -r '.hits | map([.package,.synopsis] | join("| ")) | join("|")')
+
+    IFS="|"
+    options=()
+    for f in $found; do
+        if [ "$f" == " " ]; then
+            f="(no description)"
+        else
+            f=$(echo "$f" | sed -r "s/^ //")
+        fi
+        options+=( "$f" )
+    done
+
+    title="Select a package - results from go-seach.org"
+
+    in_X="false"
+    if [ "$XDG_CURRENT_DESKTOP" != "" ]; then
+        # we've got desktop, try to find zenity
+        in_X=$(which zenity 2>&1 >/dev/null && echo "true" || echo "false")
+    fi
+
+
+    CHOOSE=""
+    if [ "$in_X" == "true" ]; then
+        CHOOSE=$(zenity --title="$title" --width=600 --height=400 --list --column="Import" --column="Description" "${options[@]}")
+    else
+        # use whiptail or dialog ?
+        cmd=$(which whiptail 2>&1 >/dev/null && echo "whiptail" || echo "dialog")
+
+        cols=$(stty size | cut -f2 -d" ")
+        rows=$(stty size | cut -f1 -d" ")
+        T=$(mktemp)
+        
+        $cmd --title="$title" --menu "Select one" $((rows-4)) $((cols-4)) $((rows-10)) -- ${options[*]} 2>$T
+        CHOOSE=$(cat $T)
+        rm -f $T
+    fi
+
+    if [ "$CHOOSE" != "" ]; then
+        go get -u "$CHOOSE"
     fi
 }
 
@@ -495,6 +592,10 @@ case $1 in
 
     update)
         checkupdate "update"
+        ;;
+
+    install-package)
+        search_install $2
         ;;
 
     *)

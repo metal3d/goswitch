@@ -1,19 +1,27 @@
-# Go Switch
+# What can GoSwitch do ?
 
-Install and switch version from official golang.org website.
+GoSwitch is a bash script that can install and switch golang version. It has got others options:
 
-Go Switch help you to setup a Go version and environment variables. It can also create a local environment that is similar to python virtualenv.
+- it can install recommended packages as glide, gocode, glide, and so on
+- it is able to create local project using a specific golang version (as Python VirtualEnv)
+- you can check golang versions that are available
 
-Goswitch can install recommended packages (see `list-recommended` and `install-recommended` options).
+Also, goswitch can do:
 
-Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script :)
+- bash completion
+- autoupdate itself
 
-My script is just a bit less heavy, simple and has not a lot of options. GVM is a great project that you should use if goswitch doesn't answer to your needs.
+
+# What about GVM ?
+
+Why to not use [gvm](https://github.com/moovweb/gvm) ? No reason, I only wanted to make my own in shell script.
+
+GoSwitch script is just a bit less heavy (it's a bash script). GVM is a great project that you should use if goswitch doesn't answer to your needs.
 
 ## Installation
 
 ```
-# If ~/.local/bin is in your PATH (recommanded)
+# If ~/.local/bin is in your PATH (recommended)
 curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/latest | \
     grep tarball | cut -d '"' -f 4) | \
     tar -zxf - --strip-components=1 -C ~/.local/bin */goswitch
@@ -27,7 +35,6 @@ sudo curl -sSL $(curl -s https://api.github.com/repos/metal3d/goswitch/releases/
 
 sudo chmod +x /usr/local/bin/goswitch
 ```
-
 
 ## Usage
 
@@ -95,6 +102,15 @@ To use that version by default, following command will set variables in ~/.profi
 ```
 goswitch use 1.9.1 default
 ```
+
+## Search and install packages
+
+Using [Go-Search API](http://go-search.org), goswitch can make search query and propose to install packages. You must have `jq` command installed.
+
+GoSwitch will try to use "zenity" (if you're in a graphical environment), either it will use whiptail or dialog command. Exemple using `goswitch install-package jwt`
+
+![](./images/zenity.png)
+![](./images/dialog.png)
 
 ## Virtual environment like Python
 
