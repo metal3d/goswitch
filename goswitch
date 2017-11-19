@@ -528,7 +528,10 @@ search_install(){
     fi
 
     if [ "$CHOOSE" != "" ]; then
+        echo "Installing $CHOOSE"
         go get -u "$CHOOSE"
+    else
+        echo "Canceled"
     fi
 }
 
