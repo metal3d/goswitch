@@ -333,7 +333,7 @@ local_project() {
 function deactivate() {
     if [ -n "\$_OLD_GOROOT" ]; then
         GOROOT="\$_OLD_GOROOT"
-        unset _OLD_GOPATH
+        unset _OLD_GOROOT
     fi
     if [ -n "\$_OLD_GOPATH" ]; then
         GOPATH="\$_OLD_GOPATH"
