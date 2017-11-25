@@ -319,8 +319,8 @@ local_project() {
         current_version=$(echo $PATH | awk -F":" '/go-/{print gensub(/.*go-([0-9]+\.[0-9]+\.[0-9]+).*/,"\\1", "g", $0)}' | head -n1)
         [ x"$current_version" != "x" ] && _USE="source <(${_CMD} use ${current_version})"
     fi
-    folder=$(realpath $folder)
     mkdir -p ${folder}/{src,bin,pkg}
+    folder=$(realpath $folder)
     cat > ${folder}/bin/activate << EOF
 # This script should be activated by a "source" command:
 # source ${folder}/bin/activate
