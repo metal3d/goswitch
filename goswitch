@@ -22,7 +22,7 @@ _CMD=$(basename $0)
 _ROOT=${GS_ROOT:-${HOME}/.go}
 _GOROOTPATH=${_ROOT}/root
 _GOPATH=${_ROOT}/path
-_VERSION=1.0.7
+_VERSION=1.0.8
 _CONF=$HOME/.config/goswitch
 _DIALOG=${GS_DIALOG}
 
@@ -371,10 +371,10 @@ export _OLD_PS1=\$PS1
 ${_USE}
 
 # set new paths
-export GOPATH=${folder}:\$GOPATH
-export PATH=${folder}/bin:\$PATH
+export GOPATH=\$VIRTUAL_ENV:\$GOPATH
+export PATH=\$VIRTUAL_ENV/bin:\$PATH
 
-proj=\`basename ${folder}\`
+proj=\`basename \$VIRTUAL_ENV\`
 export PS1="(\$proj) \$PS1"
 
 # Taken from python virtualenv
@@ -387,8 +387,8 @@ fi
 
 echo -ne "\\033[32m"
 echo "Now in a local project for Go"
-echo "go get command will install in ${folder}/bin and ${folder}/src"
-echo "Your project sources should be located in ${folder}/src/<DIR> where <DIR> are packages directory (eg. ${folder}/src/mypackage)"
+echo "go get command will install in \$VIRTUAL_ENV/bin and \$VIRTUAL_ENV/src"
+echo "Your project sources should be located in \$VIRTUAL_ENV/src/<DIR> where <DIR> are packages directory (eg. \$VIRTUAL_ENV/src/mypackage)"
 echo -ne "\\033[0m"
 echo 
 EOF
@@ -411,10 +411,10 @@ __start_${_CMD}()
     COMPREPLY=()
     cur="\${COMP_WORDS[COMP_CWORD]}"
     prev="\${COMP_WORDS[COMP_CWORD-1]}"
-    opts="install use list available local-project --help -h help bash-completion install-package install-recommended list-recommended -v --version version check-update update"
+    opts="install use list available local-project project --help -h help bash-completion install-package install-recommended list-recommended -v --version version check-update update"
 
     case \${prev} in 
-        local-project)
+        local-project|project)
             COMPREPLY=( \$(compgen -f \${cur}) )
             return 0
             ;;
@@ -674,7 +674,7 @@ case $1 in
         version
         ;;
 
-    local-project)
+    local-project|project)
         auto_check
         local_project $2 $3
         ;;
