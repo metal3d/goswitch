@@ -15,7 +15,7 @@ select_path(){
     IFS=$OLDIFS
 
     echo "Select a directory that is in your PATH."
-    echo "Prefer $HOME/.local/bin or $HOME/bin if they are in list please." 
+    echo "Prefer $HOME/.local/bin or $HOME/bin to not use system directory" 
     select place in "Cancel" ${P} ; do
         if [ "$place" == "Cancel" ]; then
             exit 0
@@ -30,7 +30,18 @@ select_path(){
     LOCATION="$location"
 }
 
-which curl 2>&1 >/dev/null || echo "You need curl to complete instalation"
+check_requirements(){
+    which curl 2>&1 >/dev/null
+    if [ $? != "0" ]; then
+        echo "You need curl to complete instalation, try one of that commands:"
+        echo "pkcon install curl"
+        echo "dnf install curl"
+        echo "apt install curl"
+        exit 1
+    fi
+}
+
+check_requirements
 select_path
 echo "Installing in $LOCATION"
 curl -sSL \
